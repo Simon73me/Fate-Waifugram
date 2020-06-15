@@ -256,7 +256,6 @@ def haremfatewaifugram(update: Update, context: CallbackContext):
                             """,
                          (ID_User, ID_Supergroup,))
         data = mycursor.fetchone()
-        print(data)
         # Se non ha un servant preferito stabilito prendo il primo in lista
         if data:
             PATH_IMG = data[0]
@@ -321,7 +320,6 @@ def PageSelection(update: Update, context: CallbackContext):
                                     LIMIT 20""",
                          (ID_User, ID_Supergroup, New_Page,))
         data = mycursor.fetchall()
-        print("1")
         # Creazione del messaggio sfruttando 20 righe
         if data:
             i = 0
@@ -498,7 +496,6 @@ def tradeservant(update: Update, context: CallbackContext):
                     try:
                         Trade_1 = int(NewTrade[0])
                         Trade_2 = int(NewTrade[1])
-                        print(Trade_1, Trade_2)
                     except:
                         pass
 
@@ -546,7 +543,6 @@ def tradeservant(update: Update, context: CallbackContext):
                             data = mycursor.fetchone()
                             if data:
                                 Name_Servant_2 = data[0]
-                                print(Name_Servant_1, Name_Servant_2)
 
                                 # Creo i pulsanti
                                 keyboard = [[InlineKeyboardButton('No :(', callback_data='No@FateWaifugram_Bot'),
@@ -925,13 +921,6 @@ def UpdateGroup(ID_Supergroup, context: CallbackContext):
                                    caption="<b>A servant appeared!</b>\nAdd them to your harem by sending "
                                            "/protecc <i>character name</i>\n",
                                    parse_mode='HTML')
-
-
-'''
-def findWholeWord(w):
-    return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
-'''
-
 
 def findWholeWord(protecc, servant):
     for protecc_word in protecc.split(" "):

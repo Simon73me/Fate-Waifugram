@@ -252,7 +252,8 @@ def haremfatewaifugram(update: Update, context: CallbackContext):
                             relations.ID_Supergroup = %s AND
                             relations.ID_Servant = servants.ID_Servant AND
                             harem.Favorite_Servant = servants.ID_Servant AND
-                            harem.ID_Supergroup = relations.ID_Supergroup
+                            harem.ID_Supergroup = relations.ID_Supergroup AND
+                            harem.ID_User = relations.ID_User
                             """,
                          (ID_User, ID_Supergroup,))
         data = mycursor.fetchone()

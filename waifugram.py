@@ -3,6 +3,7 @@ import random
 import logging
 import unidecode
 import re
+import time
 from telegram.ext import *
 from telegram import *
 from telegram.ext import MessageHandler, Filters
@@ -23,13 +24,33 @@ def error(update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
+    
+# Creare chiamata sleep che ogni ora fa una chiamata
+@run_async
+def calldb():
+    mycursor.execute("""SELECT Name_Servant
+                        FROM servants
+                        WHERE ID_Servant = 1""")
+    data = mycursor.fetchone()
+    print("ping: " + data[0])
+    time.sleep(1800)
+    calldb()
+
+
+calldb()
+
 
 # CHAT REGOLARE
 # Aggiorno il time dei messaggi
 def maindef(update: Update, context: CallbackContext):
     # Raccolgo dati gruppo
+    Supergroup_name = str(update.message.chat.title)
     ID_Supergroup = str(update.message.chat.id)
-    # Aggiorno contatore messaggi gruppo
+
+    # Verifica se il gruppo è registrato nel db
+    NewGroup(ID_Supergroup, Supergroup_name)
+
+    # Aggiorna i dati gruppo
     UpdateGroup(ID_Supergroup, context)
 
 
@@ -933,31 +954,35 @@ def findWholeWord(protecc, servant):
 
 # ---------------------------------------------
 # REGISTRAZIONE NUOVO GRUPPO
-def NewGroup(update: Update, context: CallbackContext):
+def Welcomechat(update: Update, context: CallbackContext):
+    # Prendo i dati di riferimento
+    ID_Supergroup = str(update.message.chat.id)
+    Supergroup_name = str(update.message.chat.title)
     # Verifico se l'utente entrato è il bot
     if update.message.new_chat_members[0].id == context.bot.id:
-        # Prendo i dati di riferimento
-        ID_Supergroup = str(update.message.chat.id)
-        Supergroup_name = str(update.message.chat.title)
-
-        # Cercare se il gruppo è registrato nel db
-        mycursor.execute("SELECT ID_Supergroup FROM supergroups WHERE ID_Supergroup=" + str(ID_Supergroup))
-        data = mycursor.fetchone()
-
-        # if - Se il gruppo non è registrato vienne registrato
-        # else - iene aggiornato il contatore per lo spawn della waifu
-        if not data:
-            mycursor.execute("INSERT INTO supergroups(ID_Supergroup, Supergroup_name) VALUES(%s,%s)",
-                             (ID_Supergroup, Supergroup_name))
-            mycursor.execute(
-                "INSERT INTO management(ID_Supergroup, Time_mess, Time_reset, Started) VALUES (%s,%s,%s,%s)",
-                (ID_Supergroup, 1, 100, 0))
+        NewGroup(ID_Supergroup, Supergroup_name)
         # Invio informazioni sul bot al gruppo
         update.message.reply_text(text="OwO thanks for adding me. Qt Fate/ waifus will now appear randomly! "
                                        "You can add them to your personal harem by being the first person to guess the "
                                        "character's name!\n"
                                        "Ask /help for all informations!\n"
                                   , parse_mode='HTML')
+
+
+def NewGroup(ID_Supergroup, Supergroup_name):
+    # Cercare se il gruppo è registrato nel db
+    mycursor.execute("SELECT ID_Supergroup FROM supergroups WHERE ID_Supergroup=" + str(ID_Supergroup))
+    data = mycursor.fetchone()
+
+    # if - Se il gruppo non è registrato vienne registrato
+    # else - iene aggiornato il contatore per lo spawn della waifu
+    if not data:
+        mycursor.execute("INSERT INTO supergroups(ID_Supergroup, Supergroup_name) VALUES(%s,%s)",
+                         (ID_Supergroup, Supergroup_name))
+        mycursor.execute(
+            "INSERT INTO management(ID_Supergroup, Time_mess, Time_reset, Started) VALUES (%s,%s,%s,%s)",
+            (ID_Supergroup, 1, 100, 0))
+
 
 
 #############################################
@@ -981,7 +1006,7 @@ def main():
     dp.add_handler(CallbackQueryHandler(PageSelection))
 
     # Registrazione gruppo
-    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, callback=NewGroup))
+    dp.add_handler(MessageHandler(Filters.status_update.new_chat_members, callback=Welcomechat))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.group & Filters.update.message, callback=maindef))

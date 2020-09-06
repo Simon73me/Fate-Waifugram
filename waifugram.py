@@ -888,10 +888,6 @@ def CheckUser(ID_User, Username):
 
 def UpdateGroup(ID_Supergroup, context: CallbackContext):
     # Aggiorno il numero di messaggi prima del prossimo spawn
-    mycursor.execute("""UPDATE management
-                        SET Time_mess = Time_mess - 1
-                        WHERE ID_Supergroup = %s""",
-                     (ID_Supergroup,))
     mycursor.execute("""SELECT Time_mess, started
                         FROM management
                         WHERE ID_Supergroup = %s""",
@@ -943,7 +939,13 @@ def UpdateGroup(ID_Supergroup, context: CallbackContext):
                                    caption="<b>A servant appeared!</b>\nAdd them to your harem by sending "
                                            "/protecc <i>character name</i>\n",
                                    parse_mode='HTML')
+    else:
+        mycursor.execute("""UPDATE management
+                        SET Time_mess = Time_mess - 1
+                        WHERE ID_Supergroup = %s""",
+                     (ID_Supergroup,))
 
+        
 def findWholeWord(protecc, servant):
     for protecc_word in protecc.split(" "):
         for servant_word in servant.split(" "):
